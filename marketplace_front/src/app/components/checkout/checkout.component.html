@@ -1,0 +1,75 @@
+<div class="max-w-4xl mx-auto px-4 py-8">
+
+  <!-- Loading -->
+  <div *ngIf="loading" class="text-center py-20 text-lg text-gray-600">
+    Chargement du paiement...
+  </div>
+
+  <!-- Erreur -->
+  <div *ngIf="error" class="text-center py-20">
+    <div class="bg-red-50 text-red-700 p-6 rounded-lg inline-block">
+      {{ error }}
+    </div>
+    <div class="mt-6">
+      <button (click)="goHome()"
+              class="text-blue-600 hover:underline">
+        ← Retour à la boutique
+      </button>
+    </div>
+  </div>
+
+  <!-- Résultat paiement -->
+  <div *ngIf="paymentCompleted"
+       class="text-center p-12 rounded-2xl mt-10 bg-gradient-to-br"
+       [class.from-green-50]="paymentSuccess"
+       [class.to-green-100]="paymentSuccess"
+       [class.from-red-50]="!paymentSuccess"
+       [class.to-red-100]="!paymentSuccess">
+
+    <div class="w-20 h-20 mx-auto mb-6 rounded-full flex items-center justify-center text-4xl text-white"
+         [class.bg-green-500]="paymentSuccess"
+         [class.bg-red-500]="!paymentSuccess">
+      <span *ngIf="paymentSuccess">✓</span>
+      <span *ngIf="!paymentSuccess">✗</span>
+    </div>
+
+    <h2 class="text-2xl font-bold text-gray-800 mb-3">
+      {{ paymentSuccess ? 'Paiement réussi !' : 'Paiement échoué' }}
+    </h2>
+
+    <p class="text-gray-600 mb-6">
+      {{ paymentSuccess
+         ? 'Votre commande a été validée. Merci pour votre achat !'
+         : 'Le paiement n\'a pas pu être effectué. Veuillez réessayer.' }}
+    </p>
+
+    <button (click)="goHome()"
+            class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-semibold transition-colors">
+      Retour à la boutique
+    </button>
+  </div>
+
+  <!-- Widget Pleenk -->
+  <div *ngIf="iframeUrl && !paymentCompleted" class="bg-white rounded-xl shadow-lg p-6">
+    <div class="text-center mb-6">
+      <h1 class="text-2xl font-bold text-gray-800 mb-2">
+        Paiement sécurisé Pleenk
+      </h1>
+      <p class="text-gray-600">
+        Complétez votre paiement ci-dessous. Ne fermez pas cette page.
+      </p>
+    </div>
+
+    <iframe [src]="iframeUrl"
+            class="w-full h-[700px] border rounded-lg"
+            allowpaymentrequest>
+    </iframe>
+
+    <div class="text-center mt-4">
+      <button (click)="goHome()"
+              class="text-gray-500 hover:text-gray-700 text-sm">
+        Annuler et retourner à la boutique
+      </button>
+    </div>
+  </div>
+</div>

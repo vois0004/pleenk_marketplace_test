@@ -1,0 +1,65 @@
+<div class="max-w-7xl mx-auto px-4 py-8">
+  <h1 class="text-3xl font-bold text-center text-gray-800 mb-8">
+    Marketplace Pleenk
+  </h1>
+
+  <div *ngIf="loading" class="text-center py-20 text-lg text-gray-600">
+    Chargement...
+  </div>
+
+  <div *ngIf="error" class="text-center py-20 text-lg text-red-600">
+    {{ error }}
+  </div>
+
+  <div *ngIf="!loading && !error && products.length === 0" class="text-center py-20 text-lg text-gray-600">
+    Aucun produit disponible
+  </div>
+
+  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+    <div *ngFor="let product of products"
+         class="bg-white rounded-lg shadow hover:shadow-lg transition-shadow overflow-hidden flex flex-col">
+
+      <div class="h-48 bg-gray-100 flex items-center justify-center">
+        <img *ngIf="product.imageUrl"
+             [src]="product.imageUrl"
+             [alt]="product.name"
+             class="max-w-full max-h-full object-cover">
+        <span *ngIf="!product.imageUrl" class="text-gray-400 text-sm">
+          Image non disponible
+        </span>
+      </div>
+
+      <div class="p-4 flex flex-col flex-1">
+        <!-- ✅ Titre : 2 lignes max + hauteur mini fixe -->
+        <h3 class="font-semibold text-lg text-gray-800 mb-2 leading-snug line-clamp-2 min-h-[3.25rem]">
+          {{ product.name }}
+        </h3>
+
+        <p class="text-gray-600 text-sm mb-3 leading-snug line-clamp-3 min-h-[3.75rem]">
+          {{ product.description }}
+        </p>
+
+        <div class="mb-2 min-h-[2.25rem] flex items-end">
+          <p class="text-2xl font-bold text-green-700 tabular-nums leading-none">
+            {{ product.price | currency:'EUR':'symbol':'1.2-2' }}
+          </p>
+        </div>
+
+        <div class="text-sm mb-4 min-h-[1.25rem]"
+             [class.text-green-600]="isAvailable(product)"
+             [class.text-red-600]="!isAvailable(product)">
+          <span *ngIf="isAvailable(product)">En stock ({{ product.quantity }})</span>
+          <span *ngIf="!isAvailable(product)">Rupture de stock</span>
+        </div>
+
+        <button (click)="goToPayment(product)"
+                [disabled]="!isAvailable(product)"
+                class="mt-auto w-full py-3 rounded-lg font-semibold transition-colors
+                       disabled:bg-gray-300 disabled:cursor-not-allowed
+                       bg-blue-600 hover:bg-blue-700 text-white">
+          Payer
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
