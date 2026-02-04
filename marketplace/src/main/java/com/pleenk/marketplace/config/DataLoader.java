@@ -24,46 +24,27 @@ public class DataLoader implements CommandLineRunner {
             List<Product> products = List.of(
 
                     Product.builder()
-                            .name("Potion de mana (bleue) — format raid")
+                            .name("Cosmopolitan")
                             .description("Restaure 250 MP. Peut provoquer des incantations incontrôlées en réunion.")
-                            .price(new BigDecimal("4.99"))
-                            .quantity(99)
-                            .sellerId(1L)
-                            .imageUrl("https://commons.wikimedia.org/wiki/Special:FilePath/Potion-ball_-_Lorc_-_game-icons.svg")
+                            .price(new BigDecimal("15.99"))
+                            .quantity(32)
+                            .sellerId(2L)
+                            .imageUrl("https://images.unsplash.com/photo-1514362545857-3bc16c4c7d1b?w=800&auto=format&fit=crop")
                             .status(ProductStatus.ACTIVE)
                             .build(),
 
-                    Product.builder()
-                            .name("Dé D20 béni (critique garanti*)")
-                            .description("*Non garanti. Mais il a l’air convaincant. Parfait pour les jets dramatiques.            " +
-                            "!! Ne fonctionne pas. Voir liste bugs")
-                            .price(new BigDecimal("12.00"))
-                            .quantity(40)
-                            .sellerId(3L)
-                            .imageUrl("https://commons.wikimedia.org/wiki/Special:FilePath/Twenty%20sided%20dice.svg")
-                            .status(ProductStatus.ACTIVE)
-                            .build(),
 
                     Product.builder()
-                            .name("Cape d’invisibilité")
-                            .description("Les joueurs pensent être furtifs. Le MJ sait. Toujours.")
-                            .price(new BigDecimal("59.99"))
-                            .quantity(0)
-                            .sellerId(4L)
-                            .imageUrl("https://commons.wikimedia.org/wiki/Special:FilePath/Cloakroom%20icon.svg")
-                            .status(ProductStatus.OUT_OF_STOCK)
-                            .build(),
-
-                    Product.builder()
-                            .name("Grimoire du min-maxeur")
-                            .description("Optimise ton build, ruine l’équilibrage, et déclenche des soupirs de MJ.")
-                            .price(new BigDecimal("24.99"))
+                            .name("Margarita Passion")
+                            .description("Restaure 200 MP et +15 charisme. Risque élevé de décisions audacieuses.")
+                            .price(new BigDecimal("3.99"))
                             .quantity(1)
-                            .sellerId(5L)
-                            .imageUrl("https://commons.wikimedia.org/wiki/Special:FilePath/Open%20book%2001.svg")
+                            .sellerId(2L)
+                            .imageUrl("https://images.unsplash.com/photo-1609951651556-5334e2706168?w=800&auto=format&fit=crop")
                             .status(ProductStatus.ACTIVE)
                             .build()
-            );
+
+                    );
 
             productRepository.saveAll(products);
         }
