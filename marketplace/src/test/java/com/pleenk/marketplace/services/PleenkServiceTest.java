@@ -36,8 +36,8 @@ class PleenkServiceTest {
         Map<String, String> result = service.createPaymentLink(
                 new BigDecimal("100.00"), "Test payment");
 
-        assertThat(result).containsKeys("paymentId", "paymentUrl");
-        assertThat(result.get("paymentId")).startsWith("Order-");
+        assertThat(result).containsKeys("transactionRef", "paymentUrl");
+        assertThat(result.get("transactionRef")).startsWith("Order-");
         assertThat(result.get("paymentUrl")).startsWith("https://pleenk.com/payment?");
     }
 
@@ -55,8 +55,8 @@ class PleenkServiceTest {
 
     @Test
     void createPaymentLink_generatesUniqueIds() {
-        String id1 = service.createPaymentLink(new BigDecimal("100"), "A").get("paymentId");
-        String id2 = service.createPaymentLink(new BigDecimal("100"), "B").get("paymentId");
+        String id1 = service.createPaymentLink(new BigDecimal("100"), "A").get("transactionRef");
+        String id2 = service.createPaymentLink(new BigDecimal("100"), "B").get("transactionRef");
 
         assertThat(id1).isNotEqualTo(id2);
     }

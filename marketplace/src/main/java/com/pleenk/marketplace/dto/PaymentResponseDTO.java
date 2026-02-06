@@ -19,7 +19,7 @@ public class PaymentResponseDTO {
     private Long productId;
     private Integer quantity;
     private PaymentStatus status;
-    private String pleenkPaymentId;
+    private String pleenkTransactionRef;
     private String pleenkPaymentUrl;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;

@@ -33,12 +33,8 @@ public class ProductService {
     public void decrementProductQuantity(Long id, Integer quantity) {
         Product product = getProductById(id);
 
-        if (product.getQuantity() < quantity) {
-            String msg = String.format("Stock insuffisant pour '%s' (%d) : dispo %d, demandé %d",
-                    product.getName(), id, product.getQuantity(), quantity);
-            log.error(msg);
-            throw new NotEnoughStockException(msg);
-        }
+        // todo : on recheck ici le stock mais ce ne sera plus nécessaire lorsqu'une reserve sera mise en place
+        checkStock(product, quantity);
 
         int newQty = product.getQuantity() - quantity;
         product.setQuantity(newQty);
@@ -49,5 +45,15 @@ public class ProductService {
         }
 
         productRepository.save(product);
+    }
+
+
+    public void checkStock(Product product, Integer quantity) {
+        if (product.getQuantity() < quantity) {
+            String msg = String.format("Stock insuffisant pour '%s' (%d) : dispo %d, demandé %d",
+                    product.getName(), product.getId(), product.getQuantity(), quantity);
+            log.error(msg);
+            throw new NotEnoughStockException(msg);
+        }
     }
 }

@@ -7,7 +7,6 @@ import jakarta.validation.constraints.NotNull;
 import lombok.*;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "payments")
@@ -41,8 +40,8 @@ public class Payment extends BaseEntity {
     @Column(nullable = false, length = 20)
     private PaymentStatus status;
 
-    @Column(name = "pleenk_payment_id")
-    private String pleenkPaymentId;
+    @Column(name = "pleenk_transaction_ref")
+    private String pleenkTransactionRef;
 
     @Column(name = "pleenk_payment_url", length = 1000)
     private String pleenkPaymentUrl;

@@ -36,12 +36,7 @@ public class PaymentService {
         Product product = productService.getProductById(productId);
 
         // TODO: réserver le stock pour éviter des pb si deux commandes en même temps
-        if (product.getQuantity() < quantity) {
-            throw new NotEnoughStockException(
-                    String.format("Stock insuffisant pour %s : demandé %d, dispo %d",
-                            product.getName(), quantity, product.getQuantity())
-            );
-        }
+        productService.checkStock(product, quantity);
 
         BigDecimal amount = product.getPrice().multiply(BigDecimal.valueOf(quantity));
 
@@ -58,7 +53,7 @@ public class PaymentService {
                 .quantity(quantity)
                 .amount(amount)
                 .status(PaymentStatus.PENDING)
-                .pleenkPaymentId(pleenkData.get("paymentId"))
+                .pleenkTransactionRef(pleenkData.get("transactionRef"))
                 .pleenkPaymentUrl(pleenkData.get("paymentUrl"))
                 .build());
 
@@ -67,16 +62,16 @@ public class PaymentService {
     }
 
     @Transactional
-    public void updatePaymentStatus(String pleenkPaymentId, PaymentStatus newStatus) {
-        log.info("Update statut {} -> {}", pleenkPaymentId, newStatus);
+    public void updatePaymentStatus(String pleenkTransactionRef, PaymentStatus newStatus) {
+        log.info("Update statut {} -> {}", pleenkTransactionRef, newStatus);
 
-        Payment payment = paymentRepository.findByPleenkPaymentId(pleenkPaymentId)
-                .orElseThrow(() -> new PaymentException("Paiement Pleenk introuvable: " + pleenkPaymentId));
+        Payment payment = paymentRepository.findByPleenkTransactionRef(pleenkTransactionRef)
+                .orElseThrow(() -> new PaymentException("Paiement Pleenk introuvable: " + pleenkTransactionRef));
 
         PaymentStatus oldStatus = payment.getStatus();
 
         if (isFinal(oldStatus)) {
-            log.warn("Payment {} déjà final ({}), ignoré", pleenkPaymentId, oldStatus);
+            log.warn("Payment {} déjà final ({}), ignoré", pleenkTransactionRef, oldStatus);
             return;
         }
 

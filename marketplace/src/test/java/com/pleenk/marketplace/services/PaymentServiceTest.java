@@ -51,7 +51,7 @@ class PaymentServiceTest {
                 .quantity(2)
                 .amount(new BigDecimal("4999.98"))
                 .status(PaymentStatus.PENDING)
-                .pleenkPaymentId("Order-test-123")
+                .pleenkTransactionRef("Order-test-123")
                 .build();
     }
 
@@ -77,7 +77,7 @@ class PaymentServiceTest {
     @Test
     void createPayment_success() {
         Map<String, String> pleenkData = Map.of(
-                "paymentId", "Order-uuid",
+                "transactionRef", "Order-uuid",
                 "paymentUrl", "https://pleenk.com/pay"
         );
 
@@ -94,8 +94,8 @@ class PaymentServiceTest {
         assertThat(result.getProductId()).isEqualTo(1L);
         assertThat(result.getQuantity()).isEqualTo(2);
         assertThat(result.getAmount()).isEqualByComparingTo("4999.98");
-        assertThat(result.getPleenkPaymentId()).isEqualTo("Order-uuid");
-        verify(paymentRepository, times(2)).save(any());
+        assertThat(result.getPleenkTransactionRef()).isEqualTo("Order-uuid");
+        verify(paymentRepository, times(1)).save(any());
     }
 
     @Test
@@ -107,7 +107,7 @@ class PaymentServiceTest {
             return p;
         });
         when(pleenkService.createPaymentLink(any(), any()))
-                .thenReturn(Map.of("paymentId", "x", "paymentUrl", "y"));
+                .thenReturn(Map.of("transactionRef", "x", "paymentUrl", "y"));
 
         paymentService.createPayment(1L, 3);
 
@@ -120,6 +120,8 @@ class PaymentServiceTest {
     void createPayment_notEnoughStock() {
         product.setQuantity(1);
         when(productService.getProductById(1L)).thenReturn(product);
+        doThrow(new NotEnoughStockException("Stock insuffisant"))
+                .when(productService).checkStock(product, 5);
 
         assertThatThrownBy(() -> paymentService.createPayment(1L, 5))
                 .isInstanceOf(NotEnoughStockException.class)
@@ -131,25 +133,18 @@ class PaymentServiceTest {
     @Test
     void createPayment_pleenkFails() {
         when(productService.getProductById(1L)).thenReturn(product);
-        when(paymentRepository.save(any())).thenAnswer(inv -> {
-            Payment p = inv.getArgument(0);
-            p.setId(1L);
-            return p;
-        });
         when(pleenkService.createPaymentLink(any(), any()))
                 .thenThrow(new RuntimeException("Pleenk error"));
 
         assertThatThrownBy(() -> paymentService.createPayment(1L, 2))
                 .isInstanceOf(PaymentException.class);
 
-        verify(paymentRepository, atLeast(2)).save(argThat(p ->
-                p.getStatus() == PaymentStatus.FAILED || p.getStatus() == PaymentStatus.PENDING
-        ));
+        verify(paymentRepository, never()).save(any());
     }
 
     @Test
     void updatePaymentStatus_toSuccess() {
-        when(paymentRepository.findByPleenkPaymentId("Order-test-123"))
+        when(paymentRepository.findByPleenkTransactionRef("Order-test-123"))
                 .thenReturn(Optional.of(payment));
         when(paymentRepository.save(any())).thenReturn(payment);
 
@@ -162,7 +157,7 @@ class PaymentServiceTest {
     @Test
     void updatePaymentStatus_ignoreDuplicateSuccess() {
         payment.setStatus(PaymentStatus.SUCCESS);
-        when(paymentRepository.findByPleenkPaymentId("Order-test-123"))
+        when(paymentRepository.findByPleenkTransactionRef("Order-test-123"))
                 .thenReturn(Optional.of(payment));
 
         paymentService.updatePaymentStatus("Order-test-123", PaymentStatus.SUCCESS);
@@ -173,7 +168,7 @@ class PaymentServiceTest {
 
     @Test
     void updatePaymentStatus_notFound() {
-        when(paymentRepository.findByPleenkPaymentId("unknown"))
+        when(paymentRepository.findByPleenkTransactionRef("unknown"))
                 .thenReturn(Optional.empty());
 
         assertThatThrownBy(() ->
@@ -183,7 +178,7 @@ class PaymentServiceTest {
 
     @Test
     void updatePaymentStatus_toFailedWithoutDecrementingStock() {
-        when(paymentRepository.findByPleenkPaymentId("Order-test-123"))
+        when(paymentRepository.findByPleenkTransactionRef("Order-test-123"))
                 .thenReturn(Optional.of(payment));
 
         paymentService.updatePaymentStatus("Order-test-123", PaymentStatus.FAILED);
@@ -193,7 +188,7 @@ class PaymentServiceTest {
 
     @Test
     void updatePaymentStatus_handlesStockDecrementFailure() {
-        when(paymentRepository.findByPleenkPaymentId("Order-test-123"))
+        when(paymentRepository.findByPleenkTransactionRef("Order-test-123"))
                 .thenReturn(Optional.of(payment));
         doThrow(new RuntimeException()).when(productService)
                 .decrementProductQuantity(any(), any());

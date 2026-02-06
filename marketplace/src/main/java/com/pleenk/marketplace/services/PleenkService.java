@@ -64,7 +64,7 @@ public class PleenkService {
             params.put("signature", sign(params));
 
             return Map.of(
-                    "paymentId", txRef,
+                    "transactionRef", txRef,
                     "paymentUrl", buildUrl(params)
             );
 
