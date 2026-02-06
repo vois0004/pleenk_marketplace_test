@@ -46,7 +46,7 @@ class PleenkServiceTest {
 
         assertThat(result).containsKeys("transactionRef", "paymentUrl");
         assertThat(result.get("transactionRef")).startsWith("Order-");
-        assertThat(result.get("paymentUrl")).startsWith("https://app.sandbox.pleenk.com/payment?");
+        assertThat(result.get("paymentUrl")).startsWith(TEST_PROPS.getProperty("pleenk.widget.base-url") + "/payment?");
     }
 
     @Test
@@ -55,7 +55,7 @@ class PleenkServiceTest {
                 new BigDecimal("50.00"), "Test");
 
         String url = result.get("paymentUrl");
-        assertThat(url).contains("pw_confidentiality_wallet=wallet-123");
+        assertThat(url).contains("pw_confidentiality_wallet=" + TEST_PROPS.getProperty("pleenk.wallet.id"));
         assertThat(url).contains("pw_description=");
         assertThat(url).contains("signature=");
         assertThat(url).contains("pw_beneficiary_0=");
