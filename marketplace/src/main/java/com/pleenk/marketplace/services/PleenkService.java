@@ -10,6 +10,7 @@ import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.security.*;
 import java.security.spec.PKCS8EncodedKeySpec;
+import java.security.spec.X509EncodedKeySpec;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -27,6 +28,12 @@ public class PleenkService {
     private String privateKeyPem;
 
     private PrivateKey cachedPrivateKey;
+
+
+    @Value("${pleenk.public-key}")
+    private String pleenkPublicKeyPem;
+
+    private PublicKey cachedKey;
 
     private PrivateKey getPrivateKey() {
         if (cachedPrivateKey != null) {
@@ -93,5 +100,44 @@ public class PleenkService {
         sig.update(data.getBytes(StandardCharsets.UTF_8));
 
         return Base64.getUrlEncoder().withoutPadding().encodeToString(sig.sign());
+    }
+
+    private PublicKey getPublicKey() {
+        if (cachedKey != null) return cachedKey;
+
+        try {
+            String clean = pleenkPublicKeyPem
+                    .replace("-----BEGIN PUBLIC KEY-----", "")
+                    .replace("-----END PUBLIC KEY-----", "")
+                    .replaceAll("\\s", "");
+
+            byte[] bytes = Base64.getDecoder().decode(clean);
+            cachedKey = KeyFactory.getInstance("EC")
+                    .generatePublic(new X509EncodedKeySpec(bytes));
+            return cachedKey;
+
+        } catch (Exception e) {
+            log.error("Impossible de charger la clé Pleenk", e);
+            throw new RuntimeException("Erreur chargement clé: " + e.getMessage(), e);
+        }
+    }
+
+    public boolean checkSignature(String body, String sig) {
+        try {
+
+            byte[] sigBytes = Base64.getUrlDecoder().decode(sig);
+
+            Signature signature = Signature.getInstance("SHA512withECDSA");
+            signature.initVerify(getPublicKey());
+            signature.update(body.getBytes(StandardCharsets.UTF_8));
+
+            boolean valid = signature.verify(sigBytes);
+            if (!valid) log.warn("Signature rejetée");
+            return valid;
+
+        } catch (Exception e) {
+            log.error("Erreur vérification signature", e);
+            return false;
+        }
     }
 }
